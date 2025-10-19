@@ -41,7 +41,7 @@ A modern, intelligent platform that transforms internship hunting from chaos int
 
 ### Why NOMA?
 
-- 📊 **1400+ Live Internships** - Automatically synced from GitHub repositories
+- 📊 **1400+ Live Internships** - Automatically synced from GitHub repositories that update internships as soon as they are posted!
 - 🤖 **AI-Powered Resume Optimization** - Tailored for each job description
 - 📈 **Visual Analytics Dashboard** - Track progress with beautiful charts
 - ⏰ **Smart Reminders** - Never miss an application deadline
@@ -746,22 +746,7 @@ SOFTWARE.
 - **Vercel** - For Next.js and hosting platform
 - **Open Source Community** - For all the libraries used
 
----
 
-## 📞 Support
-
-Having issues? Need help?
-
-- 📧 Email: support@noma.app
-- 💬 Discord: [Join our community](#)
-- 📖 Docs: [Documentation](#)
-- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/noma/issues)
-
----
-
-## 🌟 Star History
-
-If you find NOMA helpful, please consider giving it a star ⭐
 
 ---
 

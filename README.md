@@ -752,9 +752,7 @@ SOFTWARE.
 
 <div align="center">
 
-**Made with ❤️ by the NOMA Team**
-
-[Website](#) • [Documentation](#) • [Twitter](#) • [Discord](#)
+**Made with ❤️ by Harshita**
 
 </div>
 

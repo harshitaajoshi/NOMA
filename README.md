@@ -1,4 +1,5 @@
-# NOMA - AI-Powered Internship Organizer
+# NOMA ✨
+  An AI-Powered Internship Organizer
 
 <div align="center">
 

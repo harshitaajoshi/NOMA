@@ -16,10 +16,12 @@ export const initGemini = () => {
   return true;
 };
 
-// Gemini returns 429/500/503 when a model is overloaded. Retry once, then
-// fall back to the next model, so a busy model never fails a request.
+// Gemini returns 429/500/503, or hangs, when a model is overloaded. Retry
+// once, then fall back to the next model, so a busy model never fails a request.
 const MODELS = [...new Set([process.env.GEMINI_MODEL || 'gemini-flash-latest', 'gemini-3.8-flash', 'gemini-flash-lite-latest'])];
-const BUSY = /\[(429|500|503)\b/;
+// Overloaded or hung requests: an error status, or a connection that times out.
+const BUSY = /\[(429|500|503)\b|fetch failed|aborted|timed? ?out/i;
+const ATTEMPT_MS = 30_000;
 const GONE = /\[404\b/; // retired model: skip straight to the next one
 
 async function generateWithFallback(prompt) {
@@ -27,7 +29,7 @@ async function generateWithFallback(prompt) {
   for (const name of MODELS) {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        return await genAI.getGenerativeModel({ model: name }).generateContent(prompt);
+        return await genAI.getGenerativeModel({ model: name }, { timeout: ATTEMPT_MS }).generateContent(prompt);
       } catch (error) {
         lastError = error;
         if (GONE.test(String(error.message))) break;

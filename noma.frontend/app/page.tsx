@@ -305,7 +305,7 @@ export default function LandingPage() {
             </p>
 
             <p className="text-base md:text-lg text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-              Stop juggling spreadsheets and browser tabs. NOMA transforms chaos into clarity—track 1400+ internships, AI-optimize your resume for every role, and never miss a deadline again.
+              Stop juggling spreadsheets and browser tabs. NOMA transforms chaos into clarity—track every live internship, AI-optimize your resume for every role, and never miss a deadline again.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -320,7 +320,7 @@ export default function LandingPage() {
                 href="/dashboard/internships"
                 className="px-10 py-4 bg-white/5 border border-white/10 rounded-xl font-semibold hover:bg-white/10 hover:border-white/20 transition-all text-lg backdrop-blur-sm"
               >
-                Explore 1400+ Internships
+                Explore Live Internships
               </Link>
             </div>
 
@@ -333,7 +333,7 @@ export default function LandingPage() {
             >
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-white/30 rounded-full animate-pulse"></div>
-                <span>1400+ Live Opportunities</span>
+                <span>Auto-Synced Opportunities</span>
               </div>
               <div className="hidden sm:block w-1 h-1 bg-gray-700 rounded-full"></div>
               <div className="flex items-center gap-2">
@@ -376,7 +376,7 @@ export default function LandingPage() {
             <FeatureCard
               icon={<Target className="w-6 h-6" />}
               title="1. Apply Smarter"
-              description="1400+ live internships at your fingertips. Auto-synced, constantly updated, perfectly organized. One click to add to your tracker."
+              description="Every live internship at your fingertips. Auto-synced, constantly updated, perfectly organized. One click to add to your tracker."
               delay={0}
             />
             <FeatureCard
@@ -424,7 +424,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-bold mb-3 text-white">Smart Discovery</h3>
               <p className="text-gray-400 leading-relaxed">
-                1400+ curated opportunities at your fingertips. Auto-synced, constantly updated, ready to apply—no more endless searching.
+                Curated opportunities at your fingertips. Auto-synced, constantly updated, ready to apply—no more endless searching.
               </p>
             </div>
             <div className="group bg-white/[0.02] border border-white/10 rounded-2xl p-8 hover:bg-white/[0.04] hover:border-white/20 transition-all">

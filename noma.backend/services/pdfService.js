@@ -12,11 +12,16 @@ export const generateResumePDF = async (tweakedResumeData, originalResume = null
   try {
     const { tweakedContent, internship } = tweakedResumeData;
 
+    // Uploaded resumes are stored as plain text: the name is its first line,
+    // and the email and phone are whatever in it looks like one.
+    const text = originalResume?.parsedText || '';
+    const firstLine = text.split('\n').map((l) => l.trim()).find(Boolean) || '';
+
     // Prepare data for template
     const resumeData = {
-      name: originalResume?.name || tweakedContent.improvedSummary?.split(',')[0]?.trim() || 'Candidate',
-      email: originalResume?.email || 'email@example.com',
-      phone: originalResume?.phone || '',
+      name: originalResume?.name || (firstLine.length <= 40 ? firstLine : '') || 'Candidate',
+      email: originalResume?.email || text.match(/[\w.+-]+@[\w-]+\.[\w.-]+/)?.[0] || '',
+      phone: originalResume?.phone || text.match(/\+?\(?\d[\d\s().-]{8,}\d/)?.[0] || '',
       summary: tweakedContent.improvedSummary || tweakedContent.summary || '',
       experience: tweakedContent.improvedExperience || tweakedContent.experience || [],
       skills: tweakedContent.improvedSkills || tweakedContent.skills || '',

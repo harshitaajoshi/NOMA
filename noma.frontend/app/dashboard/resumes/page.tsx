@@ -108,6 +108,28 @@ export default function ResumesPage() {
     }
   };
 
+  // Resume files are private to this browser, so fetch them with its id
+  // rather than linking to them.
+  const openFile = async (resume: Resume, download = false) => {
+    const tab = download ? null : window.open('', '_blank');
+    try {
+      const { data } = await api.get(resume.fileUrl.replace(/^\/api/, ''), { responseType: 'blob' });
+      const url = URL.createObjectURL(data);
+      if (tab) {
+        tab.location.href = url;
+      } else {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = resume.originalFileName;
+        a.click();
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch {
+      tab?.close();
+      showError('Could not open the resume');
+    }
+  };
+
   const handleDelete = async (id: string) => {
     try {
       setDeletingId(id);
@@ -272,18 +294,17 @@ export default function ResumesPage() {
                     {/* Actions */}
                     <div className="flex items-center gap-2 ml-4">
                       <button
-                        onClick={() => window.open(resume.fileUrl, '_blank')}
+                        onClick={() => openFile(resume)}
                         className="p-2 hover:bg-white/5 rounded-lg transition-colors"
                       >
                         <Eye className="w-4 h-4 text-gray-500" />
                       </button>
-                      <a
-                        href={resume.fileUrl}
-                        download={resume.originalFileName}
+                      <button
+                        onClick={() => openFile(resume, true)}
                         className="p-2 hover:bg-white/5 rounded-lg transition-colors"
                       >
                         <Download className="w-4 h-4 text-gray-500" />
-                      </a>
+                      </button>
                       <button
                         onClick={() => handleDelete(resume.id)}
                         disabled={deletingId === resume.id}

@@ -7,7 +7,8 @@ import fs from 'fs/promises';
 export const extractTextFromPDF = async (filePath) => {
   try {
     // Dynamically import pdf-parse only when needed to avoid initialization issues
-    const pdfParse = (await import('pdf-parse')).default;
+    // The package entry runs a self-test when imported as a module; load the parser itself.
+    const pdfParse = (await import('pdf-parse/lib/pdf-parse.js')).default;
     const dataBuffer = await fs.readFile(filePath);
     const data = await pdfParse(dataBuffer);
     return data.text;

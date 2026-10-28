@@ -19,7 +19,8 @@ import {
   addItem, 
   updateItem, 
   deleteItem, 
-  findById 
+  findById,
+  runWithClient
 } from './utils/jsonStorage.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -37,13 +38,22 @@ initGemini();
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
-app.use('/generated', express.static('generated'));
+
+// Each browser sends a random id (header, or ?client= on plain links); its
+// resumes, tracker and analyses are stored separately from everyone else's.
+const CLIENT_ID = /^[a-z0-9-]{8,64}$/i;
+app.use((req, res, next) => {
+  const id = req.get('x-noma-client') || req.query.client;
+  req.clientId = CLIENT_ID.test(id ?? '') ? id : null;
+  runWithClient(req.clientId, next);
+});
+// Multer finishes on a stream event, outside the request's context; re-enter it.
+const rebind = (req, res, next) => runWithClient(req.clientId, next);
 
 // File upload configuration
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
-    const uploadDir = 'uploads/';
+    const uploadDir = req.clientId ? path.join('uploads', 'clients', req.clientId) : 'uploads';
     try {
       await fs.mkdir(uploadDir, { recursive: true });
       cb(null, uploadDir);
@@ -178,7 +188,7 @@ app.get('/api/internships/stats', async (req, res) => {
 // ============================================
 
 // Upload resume
-app.post('/api/resume/upload', upload.single('resume'), async (req, res) => {
+app.post('/api/resume/upload', upload.single('resume'), rebind, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -195,10 +205,12 @@ app.post('/api/resume/upload', upload.single('resume'), async (req, res) => {
       parsedText = await extractTextFromDOCX(filePath);
     }
 
+    const id = `resume-${Date.now()}`;
     const resume = {
-      id: `resume-${Date.now()}`,
+      id,
       originalFileName: req.file.originalname,
-      fileUrl: `http://localhost:${PORT}/${req.file.path}`,
+      filePath: req.file.path,
+      fileUrl: `/api/resume/${id}/file`,
       parsedText,
       uploadedAt: new Date().toISOString()
     };
@@ -224,6 +236,15 @@ app.get('/api/resume', async (req, res) => {
   }
 });
 
+// The uploaded file itself, only to the browser that uploaded it
+app.get('/api/resume/:id/file', async (req, res) => {
+  const resume = await findById('resumes', req.params.id);
+  if (!resume?.filePath) {
+    return res.status(404).json({ error: 'Resume not found' });
+  }
+  res.sendFile(path.resolve(resume.filePath));
+});
+
 // Delete resume
 app.delete('/api/resume/:id', async (req, res) => {
   try {
@@ -233,7 +254,7 @@ app.delete('/api/resume/:id', async (req, res) => {
     }
     
     // Delete file
-    const filePath = resume.fileUrl.replace(`http://localhost:${PORT}/`, '');
+    const filePath = resume.filePath ?? resume.fileUrl.replace(`http://localhost:${PORT}/`, '');
     try {
       await fs.unlink(filePath);
     } catch (err) {
@@ -465,14 +486,12 @@ app.get('/api/tweak/:id/download', async (req, res) => {
 
     // Generate PDF on-the-fly each time (ensures latest content)
     console.log(`📥 Generating PDF for ${tweaked.internship?.company}...`);
-    const pdfPath = await generateResumePDF(tweaked, resume);
-    
-    // Save PDF URL for future reference
-    const pdfUrl = `http://localhost:${PORT}/${pdfPath}`;
-    await updateItem('tweaked', tweaked.id, { pdfUrl });
+    const pdf = await generateResumePDF(tweaked, resume);
+    const name = `resume-${tweaked.internship?.company || 'tailored'}`.replace(/[^a-z0-9-]+/gi, '-');
 
-    console.log(`✅ PDF ready: ${pdfPath}`);
-    res.download(pdfPath);
+    console.log(`✅ PDF ready (${pdf.length} bytes)`);
+    res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${name}.pdf"` });
+    res.send(Buffer.from(pdf));
   } catch (error) {
     console.error('PDF download error:', error);
     res.status(500).json({ error: error.message });

@@ -11,10 +11,34 @@ export const initGemini = () => {
   }
 
   genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
-  console.log('✅ Gemini API initialized with gemini-2.0-flash-exp');
+  model = { generateContent: generateWithFallback };
+  console.log(`✅ Gemini API initialized with ${MODELS.join(' → ')}`);
   return true;
 };
+
+// Gemini returns 429/500/503 when a model is overloaded. Retry once, then
+// fall back to the next model, so a busy model never fails a request.
+const MODELS = [...new Set([process.env.GEMINI_MODEL || 'gemini-flash-latest', 'gemini-3.8-flash', 'gemini-flash-lite-latest'])];
+const BUSY = /\[(429|500|503)\b/;
+const GONE = /\[404\b/; // retired model: skip straight to the next one
+
+async function generateWithFallback(prompt) {
+  let lastError;
+  for (const name of MODELS) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        return await genAI.getGenerativeModel({ model: name }).generateContent(prompt);
+      } catch (error) {
+        lastError = error;
+        if (GONE.test(String(error.message))) break;
+        if (!BUSY.test(String(error.message))) throw error;
+        console.warn(`⚠️  ${name} busy, ${attempt === 0 ? 'retrying' : 'trying the next model'}`);
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+      }
+    }
+  }
+  throw lastError;
+}
 
 /**
  * Parse resume text into structured JSON

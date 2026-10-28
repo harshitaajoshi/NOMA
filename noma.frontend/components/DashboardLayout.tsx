@@ -18,6 +18,7 @@ import {
   Search,
 } from 'lucide-react';
 import NotificationPanel from './NotificationPanel';
+import { api } from '@/lib/axios';
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Explore Internships', href: '/dashboard/internships', icon: Briefcase },
@@ -46,8 +47,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   const checkNotifications = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/notifications/count');
-      const data = await response.json();
+      const { data } = await api.get('/notifications/count');
       setNotificationCount(data.count || 0);
     } catch (error) {
       console.error('Failed to check notifications:', error);

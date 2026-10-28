@@ -5,9 +5,10 @@ export interface TweakedResume {
   resumeId: string;
   internshipId: string;
   matchScore: number;
-  matchedSkills: string[];
-  missingSkills: string[];
-  suggestions: string[];
+  // Gemini returns either plain strings or objects with details.
+  matchedSkills: (string | { skill: string; importance?: string })[];
+  missingSkills: (string | { skill: string; importance?: string })[];
+  suggestions: (string | { suggestion: string; priority?: string; section?: string })[];
   tweakedContent: string;
   createdAt: string;
 }

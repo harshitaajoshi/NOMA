@@ -2,11 +2,11 @@
   "name": "noma-backend",
   "version": "1.0.0",
   "description": "NOMA - AI-powered internship organizer backend",
-  "main": "server.js",
+  "main": "server-simple.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node server-simple.js",
+    "dev": "nodemon server-simple.js"
   },
   "keywords": [
     "internship",

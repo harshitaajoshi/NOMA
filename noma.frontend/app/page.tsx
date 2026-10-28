@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Target, TrendingUp, Zap, Bell } from 'lucide-react';
 import Link from 'next/link';
 import NotificationPanel from '@/components/NotificationPanel';
+import { api } from '@/lib/axios';
 
 export default function LandingPage() {
   const [showNotifications, setShowNotifications] = useState(false);
@@ -22,8 +23,7 @@ export default function LandingPage() {
 
   const checkNotifications = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/notifications/count');
-      const data = await response.json();
+      const { data } = await api.get('/notifications/count');
       setNotificationCount(data.count || 0);
     } catch (error) {
       console.error('Failed to check notifications:', error);

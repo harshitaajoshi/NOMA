@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { AsyncLocalStorage } from 'async_hooks';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -12,6 +13,29 @@ const FILES = {
   resumes: path.join(DATA_DIR, 'resumes.json'),
   tracked: path.join(DATA_DIR, 'tracked.json'),
   tweaked: path.join(DATA_DIR, 'tweaked.json'),
+};
+
+/**
+ * Each browser sends its own client id. Internships are shared; resumes,
+ * the tracker and AI analyses live in a folder per client, so visitors of
+ * the hosted demo never see each other's data. Without an id (local use)
+ * everything stays in the top-level files as before.
+ */
+const SHARED = new Set(['internships']);
+const clientContext = new AsyncLocalStorage();
+
+export const runWithClient = (clientId, fn) => clientContext.run(clientId, fn);
+export const currentClient = () => clientContext.getStore() ?? null;
+
+export const clientDir = (base) => {
+  const id = currentClient();
+  return id ? path.join(base, 'clients', id) : base;
+};
+
+const fileFor = (type) => {
+  const file = FILES[type];
+  if (!file || SHARED.has(type) || !currentClient()) return file;
+  return path.join(clientDir(DATA_DIR), `${type}.json`);
 };
 
 /**
@@ -42,12 +66,12 @@ export const initStorage = async () => {
  */
 export const readData = async (type) => {
   try {
-    const filePath = FILES[type];
+    const filePath = fileFor(type);
     if (!filePath) {
       throw new Error(`Unknown data type: ${type}`);
     }
-    
-    const content = await fs.readFile(filePath, 'utf-8');
+
+    const content = await fs.readFile(filePath, 'utf-8').catch((e) => (e.code === 'ENOENT' ? '[]' : Promise.reject(e)));
     return JSON.parse(content);
   } catch (error) {
     console.error(`Error reading ${type}:`, error.message);
@@ -60,11 +84,12 @@ export const readData = async (type) => {
  */
 export const writeData = async (type, data) => {
   try {
-    const filePath = FILES[type];
+    const filePath = fileFor(type);
     if (!filePath) {
       throw new Error(`Unknown data type: ${type}`);
     }
-    
+
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
     await fs.writeFile(filePath, JSON.stringify(data, null, 2));
     return true;
   } catch (error) {

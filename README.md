@@ -230,8 +230,8 @@ Before running NOMA, ensure you have the following installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/noma.git
-cd noma
+git clone https://github.com/harshitaajoshi/NOMA.git
+cd NOMA
 ```
 
 ### 2. Install Backend Dependencies

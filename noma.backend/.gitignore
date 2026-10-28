@@ -5,3 +5,4 @@ generated/
 data/*.json
 !data/.gitkeep
 test/
+data/clients/
